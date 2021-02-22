@@ -7,6 +7,8 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
+
 @Component @RequiredArgsConstructor
 public class GradeHandler {
     private final GradeRepository gradeRepository;
@@ -15,7 +17,13 @@ public class GradeHandler {
         String id = serverRequest.pathVariable("id");
         return ServerResponse.
                 ok().contentType(MediaType.APPLICATION_JSON).
-                body(gradeRepository.findById(id), Grade.class);
+                body(getGradeByIdDelayed(id, Duration.ofSeconds(1)), Grade.class);
+    }
+
+    private Mono<Grade> getGradeByIdDelayed(String id, Duration duration) {
+        return gradeRepository.
+                findById(id).
+                delayElement(duration);
     }
 
 }
